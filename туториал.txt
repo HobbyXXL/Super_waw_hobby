@@ -1,0 +1,84 @@
+# 🧠 HobbyX — Полное руководство для новичков
+
+## 📁 Структура проекта
+HobbyX/
+├── .venv/                  # Виртуальное окружение (Python-зависимости)
+├── FASTAPI-MVP/            # Бэкенд на FastAPI
+│   ├── main.py             # Точка входа сервера
+│   ├── database.py         # Подключение к PostgreSQL
+│   ├── .env                # Настройки: DATABASE_URL
+│   ├── alembic/            # Миграции БД
+│   ├── models/             # SQLAlchemy-модели (13 таблиц из твоей схемы)
+│   ├── schemas/            # Pydantic-схемы (валидация данных)
+│   ├── services/           # Бизнес-логика (CRUD)
+│   └── api/                # Роутеры (эндпоинты)
+└── hobbyx_full_code.txt    # Резервная копия всего кода
+
+---
+
+## 🔧 Как запустить проект
+
+### 1. Активируй виртуальное окружение
+cd ~/Рабочий\ стол/HobbyX
+source .venv/bin/activate
+
+### 2. Убедись, что PostgreSQL запущен
+sudo systemctl start postgresql
+
+### 3. Запусти сервер
+cd FASTAPI-MVP
+uvicorn main:app --reload
+
+✅ Сервер будет доступен на:
+- http://localhost:8000        → приветствие
+- http://localhost:8000/docs  → Swagger UI (тестирование API)
+
+---
+
+## 🗃️ База данных
+
+- Используется **PostgreSQL**
+- Пользователь: `hobbyx_user`
+- Пароль: `hobbyx_pass`
+- База: `hobbyx_db`
+
+### Если нужно пересоздать таблицы:
+cd FASTAPI-MVP
+alembic upgrade head
+
+(Таблицы уже созданы — 13 штук, включая users, hobbies, chats и т.д.)
+
+---
+
+## 🛠️ Что уже работает
+
+- ✅ FastAPI инициализирован
+- ✅ Модульная структура (api/schemas/services/models)
+- ✅ Swagger UI на `/docs`
+- ✅ PostgreSQL подключён
+- ✅ Все 13 таблиц из твоей DBML схемы созданы
+- ✅ Эндпоинт `/hobbies` частично реализован
+
+---
+
+## 🚀 Что делать дальше
+
+1. Открой http://localhost:8000/docs
+2. Попробуй создать хобби через Swagger
+3. Добавляй новые роутеры: `/users`, `/chats`, `/goals` — по аналогии с `hobbies`
+
+💡 Совет: все новые сущности делай по шаблону:
+- models/X.py → таблица
+- schemas/X.py → валидация
+- services/X.py → логика
+- api/X.py → эндпоинты
+
+---
+
+## ❓ Возникли проблемы?
+
+1. Сервер не запускается? → Проверь, что `.venv` активирован.
+2. Ошибки импорта? → Убедись, что все папки содержат `__init__.py`.
+3. Нет таблиц в БД? → Выполни `alembic upgrade head`.
+
+Удачи! Твой проект — готовый production-ready бэкенд. 💪
