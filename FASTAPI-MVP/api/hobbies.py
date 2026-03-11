@@ -1,26 +1,30 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 from schemas import Hobby, HobbyCreate
-from services import HobbyService
-from typing import List
+from services.hobbies import HobbyService
+from database import get_db
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/hobbies", tags=["Hobbies"])
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-def create_hobby(hobby: HobbyCreate, service: HobbyService = Depends()) -> JSONResponse:
-    new_hobby = service.create_hobby(hobby)
-    return JSONResponse(
-        {"message": "Hobby created", "hobby": new_hobby.model_dump()},
-        status_code=status.HTTP_201_CREATED
-    )
+@router.post("/", response_model=Hobby, status_code=status.HTTP_201_CREATED)
+def create_hobby(hobby: HobbyCreate, db: Session = Depends(get_db)) -> Hobby:
+    service = HobbyService(db)
+    try:
+        return service.create_hobby(hobby)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Hobby with this name already exists")
 
-@router.get("/", response_model=List[Hobby])
-def get_hobbies(service: HobbyService = Depends()) -> List[Hobby]:
+@router.get("/", response_model=list[Hobby])
+def get_hobbies(db: Session = Depends(get_db)) -> list[Hobby]:
+    service = HobbyService(db)
     return service.get_all_hobbies()
 
 @router.get("/{hobby_id}", response_model=Hobby)
-def get_hobby(hobby_id: int, service: HobbyService = Depends()) -> Hobby:
+def get_hobby(hobby_id: int, db: Session = Depends(get_db)) -> Hobby:
+    service = HobbyService(db)
     hobby = service.get_hobby_by_id(hobby_id)
     if not hobby:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hobby not found")
+        raise HTTPException(status_code=404, detail="Hobby not found")
     return hobby
