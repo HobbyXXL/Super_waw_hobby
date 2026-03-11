@@ -1,37 +1,92 @@
-# 🧠 HobbyX — Полное руководство для новичков
+# 🧠 HobbyX — Полное руководство
+### 2. Открой терминал (`Ctrl+Alt+T`)
 
+Выполни эти команды **по порядку** — каждую строку копируй и вставляй, нажимай Enter:
+
+```bash
+# Обнови систему
+sudo apt update && sudo apt upgrade -y
+
+# Установи базовые инструменты
+sudo apt install curl wget git vim nano -y
+
+# Установи Python 3.12 (обязательно!)
+sudo apt install software-properties-common -y
+sudo add-apt-repository ppa:deadsnakes/ppa -y
+sudo apt install python3.12 python3.12-venv python3.12-pip -y
+
+# Сделай python3 ссылкой на 3.12
+sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+
+# Проверь:
+python3 --version
+# → Должно быть: Python 3.12.x
+
+# Установи Node.js 20.x
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Проверь:
+node -v
+npm -v
+# → Должно быть: v20.x.x и ≥ 9.0
+
+# Установи PostgreSQL
+sudo apt install postgresql postgresql-contrib -y
+sudo systemctl enable postgresql
+sudo systemctl start postgresql
+
+# Создай пользователя и БД для HobbyX
+sudo -u postgres createuser --createdb hobbyx_user
+sudo -u postgres psql -c "ALTER USER hobbyx_user WITH PASSWORD 'hobbyx_pass';"
+sudo -u postgres createdb hobbyx_db -O hobbyx_user
+
+# Проверь подключение:
+sudo -u postgres psql -U hobbyx_user -d hobbyx_db -c "SELECT 'OK';"
+# → Должно вывести: OK
+
+# Установи зависимости Python для FastAPI (в глобальном окружении — только для проверки)
+pip3 install fastapi uvicorn sqlalchemy pydantic python-dotenv psycopg2-binary
 ## 📁 Структура проекта
 HobbyX/
 ├── .venv/                  # Виртуальное окружение (Python-зависимости)
 ├── FASTAPI-MVP/            # Бэкенд на FastAPI
 │   ├── main.py             # Точка входа сервера
 │   ├── database.py         # Подключение к PostgreSQL
-│   ├── .env                # Настройки: DATABASE_URL
+│   ├── .env                # Настройки: DATABASE_URL=postgresql://hobbyx_user:hobbyx_pass@localhost/hobbyx_db
 │   ├── alembic/            # Миграции БД
 │   ├── models/             # SQLAlchemy-модели (13 таблиц из твоей схемы)
 │   ├── schemas/            # Pydantic-схемы (валидация данных)
 │   ├── services/           # Бизнес-логика (CRUD)
 │   └── api/                # Роутеры (эндпоинты)
-└── hobbyx_full_code.txt    # Резервная копия всего кода
+└── hobbyx-frontend/        # Фронтенд на Next.js
 
 ---
 
 ## 🔧 Как запустить проект
 
-### 1. Активируй виртуальное окружение
+### 1. Активируй виртуальное окружение (путь примерный, надо вам указать свой путь ниндзя)
 cd ~/Рабочий\ стол/HobbyX
 source .venv/bin/activate
 
 ### 2. Убедись, что PostgreSQL запущен
 sudo systemctl start postgresql
 
-### 3. Запусти сервер
+### 3. Запусти бэкенд (FastAPI)
 cd FASTAPI-MVP
 uvicorn main:app --reload
 
 ✅ Сервер будет доступен на:
 - http://localhost:8000        → приветствие
 - http://localhost:8000/docs  → Swagger UI (тестирование API)
+
+### 4. Запусти фронтенд (Next.js)
+В новом терминале:
+cd ~/Рабочий\ стол/HobbyX/hobbyx-frontend
+npm run dev
+
+✅ Фронтенд будет доступен на:
+- http://localhost:3000
 
 ---
 
@@ -57,14 +112,15 @@ alembic upgrade head
 - ✅ Swagger UI на `/docs`
 - ✅ PostgreSQL подключён
 - ✅ Все 13 таблиц из твоей DBML схемы созданы
-- ✅ Эндпоинт `/hobbies` частично реализован
+- ✅ Эндпоинт `/hobbies` полностью реализован (GET, POST, GET/{id})
+- ✅ Фронтенд отображает 15 хобби из базы
 
 ---
 
 ## 🚀 Что делать дальше
 
-1. Открой http://localhost:8000/docs
-2. Попробуй создать хобби через Swagger
+1. Открой http://localhost:3000 — увидишь карточки хобби
+2. Открой http://localhost:8000/docs — протестируй API
 3. Добавляй новые роутеры: `/users`, `/chats`, `/goals` — по аналогии с `hobbies`
 
 💡 Совет: все новые сущности делай по шаблону:
@@ -80,5 +136,8 @@ alembic upgrade head
 1. Сервер не запускается? → Проверь, что `.venv` активирован.
 2. Ошибки импорта? → Убедись, что все папки содержат `__init__.py`.
 3. Нет таблиц в БД? → Выполни `alembic upgrade head`.
+4. Ошибка `datetime_type`? → В `schemas/hobbies.py` должно быть:  
+   `created_at: Optional[datetime] = None`  
+   и импорт: `from typing import Optional`
 
-Удачи! Твой проект — готовый production-ready бэкенд. 💪
+Удачи! Твой проект — готовый production-ready бэкенд + фронтенд. 💪
