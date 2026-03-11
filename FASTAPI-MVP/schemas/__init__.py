@@ -1,1 +1,2 @@
-from schemas.hobbies import Hobby, HobbyCreate
+from .hobbies import Hobby, HobbyCreate
+from .users import User, UserCreate

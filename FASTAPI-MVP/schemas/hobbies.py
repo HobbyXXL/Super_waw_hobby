@@ -12,7 +12,7 @@ class HobbyCreate(HobbyBase):
 
 class Hobby(HobbyBase):
     id: int
-    created_at: datetime
+    created_at: Optional[datetime] = None  # ← изменено на Optional
 
     class Config:
         from_attributes = True
