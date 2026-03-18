@@ -1,0 +1,43 @@
+body {
+    font-family: Arial;
+    background: #f4f6fb;
+    text-align: center;
+}
+
+h1 {
+    color: #4a6cff;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+input {
+    display: block;
+    margin: 10px auto;
+    padding: 8px;
+    width: 80%;
+}
+
+button {
+    padding: 10px;
+    background: #4a6cff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #354edb;
+}

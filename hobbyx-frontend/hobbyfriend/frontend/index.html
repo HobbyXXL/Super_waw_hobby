@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>HobbyFriend 💙</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>💙 HobbyFriend</h1>
+
+<div class="container">
+
+    <!-- AUTH -->
+    <div class="card">
+        <h2>Регистрация</h2>
+        <input id="reg_login" placeholder="логин">
+        <input id="reg_email" placeholder="email">
+        <input id="reg_password" placeholder="пароль">
+        <button onclick="register()">Зарегистрироваться</button>
+        <p id="reg_result"></p>
+    </div>
+
+    <div class="card">
+        <h2>Вход</h2>
+        <input id="login_login" placeholder="логин">
+        <input id="login_password" placeholder="пароль">
+        <button onclick="login()">Войти</button>
+        <p id="login_result"></p>
+    </div>
+
+    <!-- POSTS -->
+    <div class="card">
+        <h2>Создать пост</h2>
+        <input id="post_content" placeholder="что у тебя нового?">
+        <button onclick="createPost()">Опубликовать</button>
+        <p id="post_result"></p>
+    </div>
+
+    <div class="card">
+        <h2>Лента</h2>
+        <button onclick="loadFeed()">Обновить</button>
+        <ul id="feed"></ul>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
