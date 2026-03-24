@@ -1,15 +1,16 @@
-from sqlalchemy import Column, String, Boolean, Integer, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.sql import func
 from .base import Base
-from datetime import datetime
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(String, primary_key=True)
-    login = Column(String, unique=True, nullable=False)
-    email = Column(String, unique=True)
-    password_hash = Column(String, nullable=False)
-    role = Column(String, default="user")
-    is_blocked = Column(Boolean, default=False)
-    terms_version_id = Column(Integer, ForeignKey("terms_versions.id"))
-    created_at = Column(DateTime, default=datetime.utcnow)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(120), unique=True, index=True, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    full_name: Mapped[str | None] = mapped_column(String(100))
+    photo_url: Mapped[str | None] = mapped_column(String(500))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
