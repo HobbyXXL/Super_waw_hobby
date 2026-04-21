@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HobbyX — Твои хобби, твои цели</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar">
+        <div class="logo">HobbyX</div>
+        <div class="nav-links">
+            <button onclick="showPage('home')" class="nav-btn">Главная</button>
+            <button onclick="showPage('register')" class="nav-btn" id="nav-register">Регистрация</button>
+            <button onclick="showPage('login')" class="nav-btn" id="nav-login">Вход</button>
+            <button onclick="logout()" class="nav-btn" id="nav-logout" style="display:none;">Выход</button>
+        </div>
+        <div class="user-info" id="user-info" style="display:none;">
+            <span id="username-display"></span>
+        </div>
+    </nav>
+
+    <!-- Главная страница -->
+    <div id="home-page" class="page active">
+        <div class="hero">
+            <h1>Найди своё хобби</h1>
+            <p>Отслеживай прогресс, ставь цели, находи единомышленников</p>
+            <button onclick="showPage('register')" class="btn btn-primary">Начать сейчас</button>
+        </div>
+        
+        <div class="features">
+            <div class="feature-card">
+                <h3>📋 20+ Хобби</h3>
+                <p>Выбери из множества направлений</p>
+            </div>
+            <div class="feature-card">
+                <h3>🎯 Цели</h3>
+                <p>Ставь и достигай своих целей</p>
+            </div>
+            <div class="feature-card">
+                <h3>📅 Календарь</h3>
+                <p>Отслеживай активность каждый день</p>
+            </div>
+            <div class="feature-card">
+                <h3>👥 Сообщество</h3>
+                <p>Находи партнёров для занятий</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Регистрация (Шаг 1) -->
+    <div id="register-page" class="page">
+        <div class="form-container">
+            <h2>Регистрация</h2>
+            <form id="register-form">
+                <div class="form-group">
+                    <label>Логин</label>
+                    <input type="text" id="reg-login" required minlength="3" maxlength="50">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="reg-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="reg-password" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            </form>
+            <div id="register-message" class="message"></div>
+        </div>
+    </div>
+
+    <!-- Подтверждение кода (Шаг 2) -->
+    <div id="verify-page" class="page">
+        <div class="form-container">
+            <h2>Подтверждение Email</h2>
+            <p>Код отправлен на вашу почту</p>
+            <form id="verify-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="verify-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Код подтверждения</label>
+                    <input type="text" id="verify-code" required maxlength="6" pattern="[0-9]{6}">
+                </div>
+                <button type="submit" class="btn btn-primary">Подтвердить</button>
+            </form>
+            <div id="verify-message" class="message"></div>
+        </div>
+    </div>
+
+    <!-- Заполнение профиля (Шаг 3) -->
+    <div id="profile-complete-page" class="page">
+        <div class="form-container">
+            <h2>Заполнение профиля</h2>
+            <form id="profile-complete-form">
+                <div class="form-group">
+                    <label>Выберите хобби (до 5)</label>
+                    <select id="hobby-select" multiple size="5"></select>
+                </div>
+                <div class="form-group">
+                    <label>Ваш уровень</label>
+                    <select id="experience-level">
+                        <option value="beginner">Начинающий</option>
+                        <option value="intermediate">Средний</option>
+                        <option value="advanced">Продвинутый</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Дней в неделю</label>
+                    <input type="number" id="frequency-week" min="1" max="7">
+                </div>
+                <div class="form-group">
+                    <label>Почему это хобби?</label>
+                    <textarea id="why-hobby" maxlength="1000"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Кого ищешь?</label>
+                    <textarea id="looking-for" maxlength="500"></textarea>
+                </div>
+                
+                <hr>
+                
+                <div class="form-group">
+                    <label>Название цели</label>
+                    <input type="text" id="goal-title" required minlength="10">
+                </div>
+                <div class="form-group">
+                    <label>Описание цели</label>
+                    <textarea id="goal-description" required minlength="20"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Тип цели</label>
+                    <select id="goal-type">
+                        <option value="learn">Научиться</option>
+                        <option value="create">Создать</option>
+                        <option value="relax">Отдохнуть</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Почему эта цель важна?</label>
+                    <textarea id="goal-why" maxlength="1000"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Завершить профиль</button>
+            </form>
+            <div id="profile-complete-message" class="message"></div>
+        </div>
+    </div>
+
+    <!-- Вход -->
+    <div id="login-page" class="page">
+        <div class="form-container">
+            <h2>Вход</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Логин</label>
+                    <input type="text" id="login-login" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Войти</button>
+            </form>
+            <div id="login-message" class="message"></div>
+        </div>
+    </div>
+
+    <!-- Профиль пользователя -->
+    <div id="profile-page" class="page">
+        <div class="profile-container">
+            <h2>Мой профиль</h2>
+            
+            <!-- ✅ НОВАЯ КНОПКА: Редактировать профиль -->
+            <button onclick="showPage('profile-complete')" class="btn btn-secondary" style="margin-bottom: 1rem;">
+                ✏️ Редактировать профиль
+            </button>
+            
+            <div class="profile-info">
+                <div class="info-block">
+                    <label>Логин:</label>
+                    <span id="profile-login"></span>
+                </div>
+                <div class="info-block">
+                    <label>Email:</label>
+                    <span id="profile-email"></span>
+                </div>
+                <div class="info-block">
+                    <label>Статус:</label>
+                    <span id="profile-verified"></span>
+                </div>
+            </div>
+            
+            <div class="profile-section">
+                <h3>Мои хобби</h3>
+                <div id="profile-hobbies"></div>
+            </div>
+            
+            <div class="profile-section">
+                <h3>Мои цели</h3>
+                <div id="profile-goals"></div>
+            </div>
+            
+            <div class="profile-section">
+                <h3>Календарь активности</h3>
+                <div id="activity-calendar"></div>
+                <button onclick="markActivity()" class="btn btn-secondary">Отметить активность сегодня</button>
+            </div>
+            
+            <div class="profile-section">
+                <h3>Мои посты</h3>
+                <button onclick="showPage('create-post')" class="btn btn-secondary">Создать пост</button>
+                <div id="profile-posts"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Создание поста -->
+    <div id="create-post-page" class="page">
+        <div class="form-container">
+            <h2>Создать пост</h2>
+            <form id="create-post-form">
+                <div class="form-group">
+                    <label>Заголовок</label>
+                    <input type="text" id="post-title" required>
+                </div>
+                <div class="form-group">
+                    <label>Описание</label>
+                    <textarea id="post-description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Публичный?</label>
+                    <select id="post-public">
+                        <option value="true">Да</option>
+                        <option value="false">Нет (только мне)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Опубликовать</button>
+            </form>
+            <div id="create-post-message" class="message"></div>
+        </div>
+    </div>
+
+    <!-- Поиск пользователей -->
+    <div id="search-page" class="page">
+        <div class="form-container">
+            <h2>Поиск пользователей</h2>
+            <form id="search-form">
+                <div class="form-group">
+                    <label>По хобби</label>
+                    <select id="search-hobby"></select>
+                </div>
+                <div class="form-group">
+                    <label>Уровень</label>
+                    <select id="search-level">
+                        <option value="">Любой</option>
+                        <option value="beginner">Начинающий</option>
+                        <option value="intermediate">Средний</option>
+                        <option value="advanced">Продвинутый</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Найти</button>
+            </form>
+            <div id="search-results"></div>
+        </div>
+    </div>
+
+    <!-- Сообщения -->
+    <div id="message-container" class="message-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
