@@ -1,0 +1,82 @@
+/* ===== AUTH ===== */
+.auth-page{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;animation:fadeIn .5s ease}
+.auth-skip-btn{position:fixed;top:22px;right:22px;z-index:100;background:rgba(255,255,255,.85);border:1.5px solid var(--orange);color:var(--orange);font-family:'Nunito',sans-serif;font-weight:700;font-size:14px;padding:10px 22px;border-radius:50px;cursor:pointer;backdrop-filter:blur(8px);transition:all .2s;box-shadow:0 2px 12px rgba(245,166,35,.15)}
+.auth-skip-btn:hover{background:var(--orange);color:#fff;transform:translateY(-2px)}
+.auth-logo-area{text-align:center;margin-bottom:30px}
+.auth-title{font-family:'Unbounded',sans-serif;font-size:32px;font-weight:700;color:var(--brown-dark);letter-spacing:2px;margin-top:16px}
+.auth-subtitle{color:var(--orange);font-size:16px;font-weight:600;margin-top:6px}
+.auth-card{background:#fff;border-radius:var(--radius);padding:36px 44px;width:100%;max-width:520px;box-shadow:var(--shadow);animation:popIn .45s ease}
+.auth-card-title{font-size:22px;font-weight:800;color:var(--brown-dark);margin-bottom:28px}
+.form-group{margin-bottom:20px}
+.form-label{display:block;font-size:15px;font-weight:600;color:var(--brown-dark);margin-bottom:8px}
+.form-input-wrap{position:relative;background:var(--gray-input);border-radius:var(--radius-sm);display:flex;align-items:center;border:2px solid transparent;transition:border-color .2s,box-shadow .2s}
+.form-input-wrap:focus-within{border-color:var(--orange);box-shadow:0 0 0 4px rgba(245,166,35,.12)}
+.form-input-wrap.error{border-color:var(--red);animation:shake .4s ease}
+.form-input-wrap .icon{padding:14px 14px 14px 16px;color:var(--gray-text);font-size:18px;flex-shrink:0}
+.form-input{flex:1;background:transparent;border:none;outline:none;font-family:'Nunito',sans-serif;font-size:15px;color:var(--brown-dark);padding:14px 16px 14px 0}
+.form-input::placeholder{color:#bbb}
+.auth-footer{display:flex;align-items:center;justify-content:space-between;margin-top:28px}
+.auth-link{color:var(--orange);font-weight:700;cursor:pointer;transition:opacity .15s}
+.auth-link:hover{opacity:.75}
+.btn-primary{background:linear-gradient(135deg,#FFD166,#F5A623);color:var(--brown-dark);font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;padding:13px 32px;border-radius:50px;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(245,166,35,.35);transition:all .2s;position:relative;overflow:hidden}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,166,35,.5)}
+.btn-primary:active{transform:scale(.97)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.error-msg{color:var(--red);font-size:13px;font-weight:600;margin-top:8px;animation:fadeIn .3s ease;display:flex;align-items:center;gap:6px}
+
+/* ===== ONBOARDING ===== */
+.onboarding-page{min-height:100vh;display:flex;background:#fff;animation:fadeIn .4s ease}
+.onboarding-sidebar{width:280px;min-width:240px;padding:40px 32px;background:#fff;border-right:1.5px solid #F0EDE8;display:flex;flex-direction:column}
+.sidebar-welcome-title{font-size:22px;font-weight:800;color:var(--brown-dark);margin-bottom:12px}
+.sidebar-welcome-desc{font-size:14px;color:var(--gray-text);line-height:1.6;margin-bottom:36px}
+.sidebar-step{display:flex;align-items:flex-start;padding:14px 0;position:relative}
+.sidebar-step:not(:last-child)::after{content:'';position:absolute;left:18px;top:46px;width:2px;height:calc(100% - 14px);background:#E8E4DF}
+.step-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;margin-right:14px;transition:all .3s}
+.step-num.done{background:var(--green);color:#fff}
+.step-num.active{background:var(--orange);color:var(--brown-dark)}
+.step-num.pending{background:#E8E4DF;color:var(--gray-text)}
+.step-info .step-label{font-size:15px;font-weight:700;color:var(--brown-dark)}
+.step-info .step-sub{font-size:12px;color:var(--gray-text);margin-top:2px}
+.onboarding-main{flex:1;position:relative;overflow:hidden}
+.onboarding-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.65)}
+.onboarding-content{position:relative;z-index:2;padding:36px 44px;min-height:100vh;display:flex;flex-direction:column}
+.onboarding-header{display:flex;align-items:center;gap:16px;margin-bottom:32px}
+.onboarding-brand-title{font-family:'Unbounded',sans-serif;font-size:24px;font-weight:700;color:#fff}
+.onboarding-brand-sub{font-size:14px;color:rgba(255,255,255,.8);font-weight:500}
+.onboarding-card{background:#fff;border-radius:var(--radius);padding:36px 40px;flex:1;box-shadow:var(--shadow);animation:popIn .4s ease}
+.hobby-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 28px}
+.hobby-chip{display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:12px;border:1.5px dashed #D0C9C0;background:#fff;cursor:pointer;font-size:14px;font-weight:600;color:var(--brown-dark);transition:all .2s;white-space:nowrap;animation:fadeIn .4s ease both;position:relative;overflow:hidden}
+.hobby-chip:hover{border-color:var(--orange);background:var(--orange-pale);transform:translateY(-1px)}
+.hobby-chip.selected{border-color:var(--orange);border-style:dashed;background:#FFFAEF;box-shadow:0 2px 12px rgba(245,166,35,.2)}
+.level-grid{display:flex;flex-direction:column;gap:14px;margin-bottom:28px}
+.level-row{display:flex;align-items:center;gap:16px;padding:4px 0}
+.level-hobby-name{font-size:15px;font-weight:700;color:var(--brown-dark);min-width:160px}
+.level-chips{display:flex;gap:10px}
+.level-chip{padding:10px 20px;border-radius:50px;border:2px solid #E0D8CF;background:#fff;cursor:pointer;font-size:14px;font-weight:600;color:var(--gray-text);transition:all .2s;font-family:'Nunito',sans-serif}
+.level-chip:hover{border-color:var(--orange);color:var(--brown-dark)}
+.level-chip.selected{background:var(--orange);border-color:var(--orange);color:var(--brown-dark);font-weight:700;box-shadow:0 2px 10px rgba(245,166,35,.35)}
+.goals-textarea{width:100%;min-height:130px;background:var(--gray-input);border-radius:var(--radius-sm);border:2px solid transparent;outline:none;font-family:'Nunito',sans-serif;font-size:15px;color:var(--brown-dark);padding:16px;resize:none;transition:border-color .2s}
+.goals-textarea:focus{border-color:var(--orange)}
+.goals-hints{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.hint-chip{padding:7px 16px;border-radius:50px;background:var(--orange-pale);border:1.5px solid var(--orange-light);color:var(--brown);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.hint-chip:hover{background:var(--orange-light);transform:translateY(-1px)}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+.summary-card{background:var(--orange-pale);border-radius:var(--radius-sm);padding:24px;text-align:center;border:2px solid var(--orange-light)}
+.summary-card .s-icon{font-size:40px;margin-bottom:10px;animation:starFloat 3s ease-in-out infinite}
+.summary-card .s-num{font-size:32px;font-weight:900;color:var(--brown-dark)}
+.summary-card .s-label{font-size:14px;color:var(--gray-text);margin-top:4px;font-weight:600}
+.friends-tabs{display:flex;gap:8px;margin-bottom:24px}
+.friends-tab{padding:8px 20px;border-radius:50px;background:#F0EDE8;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;color:var(--gray-text);transition:all .2s}
+.friends-tab.active{background:var(--orange);color:var(--brown-dark)}
+.friends-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.friend-card{background:var(--gray-bg);border-radius:var(--radius-sm);padding:16px;cursor:pointer;border:2px solid transparent;transition:all .2s;animation:fadeIn .4s ease both}
+.friend-card:hover{border-color:var(--orange-light);transform:translateY(-2px);box-shadow:var(--shadow-card)}
+.friend-card.selected{border-color:var(--orange);background:var(--orange-pale)}
+.friend-card-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.friend-avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;position:relative;flex-shrink:0}
+.friend-avatar img{width:100%;height:100%;object-fit:cover}
+.online-dot{position:absolute;bottom:1px;right:1px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid #fff}
+.friend-name{font-size:15px;font-weight:700;color:var(--brown-dark)}
+.friend-flame{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;color:var(--orange)}
+.btn-add-friend{width:100%;padding:9px;background:var(--orange);color:var(--brown-dark);border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-add-friend.added{background:var(--green);color:#fff}
