@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ХОББИДРУГ — сервис для помощи в вашем хобби</title>
+
+  <!-- Vue 3 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Unbounded:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- CSS Variables & Root Styles -->
+  <style>
+    :root {
+      --orange: #F5A623; --orange-light: #FFD166; --orange-pale: #FFF3DC; --orange-mid: #FFBE77;
+      --brown: #5C3D1E; --brown-dark: #3B2510;
+      --gray-bg: #F5F5F5; --gray-input: #EFEFEF; --gray-text: #888;
+      --green: #4CAF50; --red: #E53935; --blue: #2196F3;
+      --shadow: 0 8px 32px rgba(92,61,30,.10); --shadow-card: 0 2px 12px rgba(92,61,30,.08);
+      --radius: 20px; --radius-sm: 12px;
+      --sidebar-w: 230px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Nunito', sans-serif; background: #fff; min-height: 100vh; overflow-x: hidden; }
+  </style>
+
+  <!-- Modular CSS -->
+  <link rel="stylesheet" href="src/styles/base.css">
+  <link rel="stylesheet" href="src/styles/auth.css">
+  <link rel="stylesheet" href="src/styles/layout.css">
+  <link rel="stylesheet" href="src/styles/feed.css">
+  <link rel="stylesheet" href="src/styles/profile.css">
+  <link rel="stylesheet" href="src/styles/chat.css">
+  <link rel="stylesheet" href="src/styles/settings.css">
+  <link rel="stylesheet" href="src/styles/rules.css">
+  <link rel="stylesheet" href="src/styles/online.css">
+  <link rel="stylesheet" href="src/styles/dark.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- Vue destructuring -->
+  <script>
+    const { createApp, ref, computed, reactive, onMounted, watch, nextTick } = Vue;
+  </script>
+
+  <!-- App modules (order matters) -->
+  <script src="src/js/constants.js"></script>
+  <script src="src/js/audio.js"></script>
+  <script src="src/js/streak.js"></script>
+  <script src="src/js/calendar.js"></script>
+  <script src="src/js/chatData.js"></script>
+  <script src="src/js/app.js"></script>
+
+  <!-- Mount Vue app -->
+  <script src="src/main.js"></script>
+</body>
+</html>

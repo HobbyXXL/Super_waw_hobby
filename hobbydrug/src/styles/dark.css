@@ -1,0 +1,44 @@
+/* ===== DARK THEME ===== */
+body.dark{background:#1a1a2e;color:#e8e0d0}
+body.dark .app-layout{background:#12121f}
+body.dark .app-sidebar{background:#16213e;border-color:#2a2a4a}
+body.dark .app-topbar{background:#16213e;border-color:#2a2a4a}
+body.dark .post-card{background:#1f1f3a;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+body.dark .post-title{color:#f0e8d8}
+body.dark .post-author-name{color:#f0e8d8}
+body.dark .post-text{color:#b8a898}
+body.dark .progress-card{background:#1f1f3a}
+body.dark .progress-title{color:#f0e8d8}
+body.dark .stat-row{color:#b8a898;border-color:#2a2a4a}
+body.dark .profile-card{background:#1f1f3a}
+body.dark .profile-name{color:#f0e8d8}
+body.dark .app-brand-name{color:#f0e8d8}
+body.dark .nav-item{color:#9090b0}
+body.dark .nav-item:hover,.dark .nav-item.active{background:#2a2a4a;color:#f0e8d8}
+body.dark .topbar-search{background:#2a2a4a}
+body.dark .topbar-search input{color:#f0e8d8}
+body.dark .comment-bubble{background:#2a2a4a}
+body.dark .comment-author{color:#f0e8d8}
+body.dark .comment-text{color:#b8a898}
+body.dark .friends-list-card{background:#1f1f3a}
+body.dark .friends-list-name{color:#f0e8d8}
+body.dark .modal-box{background:#1f1f3a}
+body.dark .modal-title{color:#f0e8d8}
+body.dark .post-title-input,.dark .post-text-area{background:#2a2a4a;color:#f0e8d8}
+body.dark .rules-card{background:#1f1f3a}
+body.dark .rules-title,.dark .rules-intro,.dark .rule-body{color:#c8b898}
+body.dark .rule-item{background:#252540;border-color:#2a2a4a}
+body.dark .rule-num-title{color:#f0d898}
+body.dark .settings-card{background:#1f1f3a}
+body.dark .settings-section-title{color:#c0b090}
+body.dark .settings-input{background:#2a2a4a;color:#f0e8d8}
+body.dark .chat-list{background:#16213e;border-color:#2a2a4a}
+body.dark .chat-item{border-color:#2a2a4a}
+body.dark .chat-item:hover,.dark .chat-item.active{background:#2a2a3e}
+body.dark .chat-item-name{color:#f0e8d8}
+body.dark .chat-messages-area{background:#12121f}
+body.dark .chat-input-area{background:#16213e;border-color:#2a2a4a}
+body.dark .chat-input{background:#2a2a4a;color:#f0e8d8}
+body.dark .msg-bubble-other{background:#2a2a4a;color:#e8e0d0}
+body.dark .chat-header{background:#16213e;border-color:#2a2a4a}
+body.dark .chat-header-name{color:#f0e8d8}
