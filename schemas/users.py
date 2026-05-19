@@ -1,11 +1,12 @@
 from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime, date
+from datetime import datetime
 from typing import Optional, List
 from .portfolio import PortfolioWork
 
 # ============================================
 # БАЗОВЫЕ СХЕМЫ
-# ============================================
+# class ActivityMarkRequest(BaseModel):============================================
 
 class UserBase(BaseModel):
     login: str = Field(min_length=3, max_length=50)
@@ -144,3 +145,32 @@ class ResendCodeRequest(BaseModel):
 class ResendCodeResponse(BaseModel):
     message: str = "Код отправлен повторно"
     expires_in_minutes: int = 15
+class ActivityMarkRequest(BaseModel):
+    hobby_id: int
+    duration_minutes: int
+
+class ActivityMarkResponse(BaseModel):
+    id: int
+    message: str
+    current_streak: int
+
+class PostCreate(BaseModel):
+    title: str
+    description: str | None = None
+    hobby_id: int
+    is_public: bool = True
+
+class PostResponse(BaseModel):
+    id: int
+    title: str
+    hobby_id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class UserSearchResult(BaseModel):
+    id: int
+    login: str
+    avatar_url: str | None = None
+
