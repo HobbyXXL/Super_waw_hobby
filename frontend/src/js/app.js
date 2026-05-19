@@ -213,7 +213,7 @@ const App = {
           showToast('🔥 Добро пожаловать обратно!');
         } else {
           // Регистрация — шаг 1: отправка кода (через api.js)
-          const userData = await window.api.authAPI.register(em, pw);
+          const userData = await window.api.authAPI.register(login, em, pw);
           currentUser.name = getNickFromEmail(em);
           currentUser.email = em;
           isGuest.value = false;

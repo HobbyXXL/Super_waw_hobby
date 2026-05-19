@@ -1,12 +1,11 @@
 from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime, date
-from datetime import datetime
 from typing import Optional, List
 from .portfolio import PortfolioWork
 
 # ============================================
 # БАЗОВЫЕ СХЕМЫ
-# class ActivityMarkRequest(BaseModel):============================================
+# ============================================
 
 class UserBase(BaseModel):
     login: str = Field(min_length=3, max_length=50)
@@ -51,11 +50,6 @@ class VerificationSuccessResponse(BaseModel):
 # ============================================
 # ЗАПОЛНЕНИЕ ПРОФИЛЯ (ШАГ 3)
 # ============================================
-
-class ExperienceLevelEnum(str):
-    BEGINNER = "beginner"
-    INTERMEDIATE = "intermediate"
-    ADVANCED = "advanced"
 
 class UserHobbyInput(BaseModel):
     """Информация о хобби пользователя"""
@@ -145,22 +139,31 @@ class ResendCodeRequest(BaseModel):
 class ResendCodeResponse(BaseModel):
     message: str = "Код отправлен повторно"
     expires_in_minutes: int = 15
+
+# ============================================
+# НОВЫЕ СХЕМЫ: АКТИВНОСТЬ, ПОСТЫ, ПОИСК
+# ============================================
+
 class ActivityMarkRequest(BaseModel):
+    """Запрос на отметку активности"""
     hobby_id: int
     duration_minutes: int
 
 class ActivityMarkResponse(BaseModel):
+    """Ответ после отметки активности"""
     id: int
     message: str
     current_streak: int
 
 class PostCreate(BaseModel):
+    """Создание нового поста"""
     title: str
-    description: str | None = None
+    description: Optional[str] = None
     hobby_id: int
     is_public: bool = True
 
 class PostResponse(BaseModel):
+    """Ответ с данными созданного поста"""
     id: int
     title: str
     hobby_id: int
@@ -170,7 +173,7 @@ class PostResponse(BaseModel):
         from_attributes = True
 
 class UserSearchResult(BaseModel):
+    """Результат поиска пользователя"""
     id: int
     login: str
-    avatar_url: str | None = None
-
+    avatar_url: Optional[str] = None

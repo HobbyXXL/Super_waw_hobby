@@ -1,8 +1,8 @@
-// main.js — полный запуск Vue-приложения
+// main.js — полный запуск Vue-приложения (ИСПРАВЛЕННАЯ ВЕРСИЯ)
 import { createApp, ref, reactive, computed, watch, onMounted, nextTick } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
 
 // === API CLIENT ===
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'http://127.0.0.1:8000';
 
 function authHeaders() {
   const token = localStorage.getItem('hd_token');
@@ -27,15 +27,29 @@ async function request(path, opts = {}) {
   return data;
 }
 
+// === ИСПРАВЛЕННЫЙ AUTH API ===
 const authAPI = {
-  async register(email, password) {
+  // ТЕПЕРЬ ПРИНИМАЕТ 3 АРГУМЕНТА: login, email, password
+  async register(login, email, password) {
+    console.log("🚀 ОТПРАВКА ИЗ MAIN.JS:", { login, email, password });
+    
+    const bodyData = {
+      login: login,
+      email: email,
+      password: password
+    };
+
     const data = await request('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify(bodyData)
     });
-    localStorage.setItem('hd_token', data.access_token);
-    return data.user;
+    
+    if (data && data.access_token) {
+      localStorage.setItem('hd_token', data.access_token);
+    }
+    return data;
   },
+  
   async login(email, password) {
     const form = new URLSearchParams({ username: email, password });
     const res = await fetch(`${BASE_URL}/auth/token`, {
@@ -46,14 +60,14 @@ const authAPI = {
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Ошибка входа');
     localStorage.setItem('hd_token', data.access_token);
-    return usersAPI.me();
+    return data; // Возвращаем данные пользователя
   },
   logout() {
     localStorage.removeItem('hd_token');
   },
   async checkSession() {
     try {
-      return await usersAPI.me();
+      return await request('/users/me');
     } catch {
       localStorage.removeItem('hd_token');
       return null;
@@ -63,7 +77,7 @@ const authAPI = {
 
 const usersAPI = {
   me() { return request('/users/me'); },
-  updateMe(payload) { return request('/users/me', { method: 'PUT', body: JSON.stringify(payload) }); }
+  updateMe(payload) { return request('/users/me/profile', { method: 'PUT', body: JSON.stringify(payload) }); }
 };
 
 const postsAPI = {
@@ -195,7 +209,7 @@ const App = {
       toastTimer = setTimeout(() => { toast.value = ''; }, 3000);
     }
 
-    // --- Feed posts (теперь пусто — данные приходят из API)
+    // --- Feed posts
     const allPosts = ref([]);
     const myPosts = ref([]);
     const likedPosts = computed(() => allPosts.value.filter(p => p.liked));
@@ -219,7 +233,7 @@ const App = {
           p.description?.toLowerCase().includes(q) ||
           p.tags?.some(t => t.toLowerCase().includes(q))
         ),
-        users: [] // будет заполнено из API
+        users: [] 
       };
     });
 
@@ -269,10 +283,16 @@ const App = {
       getScroller().scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // --- Аутентификация (теперь через api)
+    // === ИСПРАВЛЕННАЯ ФУНКЦИЯ АВТОРИЗАЦИИ ===
     async function submitAuth() {
       authError.value = ''; emailError.value = false; pwError.value = false;
-      const em = email.value.trim(), pw = password.value;
+      
+      const em = email.value.trim();
+      const pw = password.value;
+      
+      // Генерируем случайный логин автоматически
+      const generatedLogin = "user_" + Date.now().toString().slice(-6);
+
       if (!em) { authError.value = 'Введите электронную почту'; emailError.value = true; return; }
       if (!isValidEmail(em)) { authError.value = 'Введите корректный email'; emailError.value = true; return; }
       if (!pw) { authError.value = 'Введите пароль'; pwError.value = true; return; }
@@ -281,7 +301,6 @@ const App = {
 
       try {
         if (authMode.value === 'login') {
-          // Вызов через api
           const userData = await authAPI.login(em, pw);
           Object.assign(currentUser, userData);
           isGuest.value = false;
@@ -290,8 +309,11 @@ const App = {
           markTodayVisited();
           showToast('🔥 Добро пожаловать обратно!');
         } else {
-          // Регистрация — шаг 1: отправка кода (через api)
-          const userData = await authAPI.register(em, pw);
+          // РЕГИСТРАЦИЯ: передаем 3 аргумента (login, email, password)
+          console.log("🔥 НАЧАЛО РЕГИСТРАЦИИ:", { login: generatedLogin, email: em, password: "***" });
+          
+          const userData = await authAPI.register(generatedLogin, em, pw);
+          
           currentUser.name = getNickFromEmail(em);
           currentUser.email = em;
           isGuest.value = false;
@@ -299,6 +321,7 @@ const App = {
           showToast('📧 Код подтверждения отправлен на ' + em);
         }
       } catch (err) {
+        console.error("Ошибка авторизации:", err);
         authError.value = err.message || 'Сервер недоступен';
         playSoundIfEnabled('error');
       }
@@ -313,7 +336,7 @@ const App = {
       showToast('👀 Просмотр без авторизации');
     }
 
-    // --- Onboarding (теперь через api)
+    // --- Onboarding
     async function nextOnboarding() {
       onboardingValidationMsg.value = '';
       if (page.value === 'onboarding-hobbies') {
@@ -342,7 +365,6 @@ const App = {
         playSoundIfEnabled('success');
         page.value = 'onboarding-friends';
       } else if (page.value === 'onboarding-friends') {
-        // Шаг 4: сохраняем профиль через API (через api)
         try {
           const profileData = {
             hobbies: selectedHobbies.value.map(id => ({
@@ -366,10 +388,8 @@ const App = {
             looking_for: 'друзей и вдохновения'
           };
 
-          // Вызов через api
           const updatedUser = await onboardingAPI.complete(profileData);
 
-          // Обновляем локальный профиль
           currentUser.hobbies = selectedHobbies.value.map(id => ({
             id,
             name: `Хобби ${id}`,
@@ -394,13 +414,11 @@ const App = {
       if (i > 0) page.value = steps[i - 1];
     }
 
-    // --- Feed actions (теперь через api)
+    // --- Feed actions
     async function likePost(post) {
       if (isGuest.value) { showToast('Войдите, чтобы ставить лайки'); return; }
       try {
-        // Вызов через api
         const response = await postsAPI.like(post.id);
-        // Оптимистичное обновление
         post.liked = !post.liked;
         post.likes += post.liked ? 1 : -1;
         if (post.liked) {
@@ -425,7 +443,6 @@ const App = {
       const text = (commentInputs.value[post.id] || '').trim();
       if (!text) return;
       try {
-        // Вызов через api
         const comment = await postsAPI.addComment(post.id, text);
         post.comments = [...(post.comments || []), {
           author: currentUser.name,
@@ -441,15 +458,14 @@ const App = {
       }
     }
 
-    // --- Загрузка постов (теперь через api)
+    // --- Загрузка постов
     async function loadFeed() {
       try {
-        // Вызов через api
         const allPostsData = await postsAPI.feed();
         allPosts.value = allPostsData.map(p => ({
           ...p,
           time: formatDateRelative(p.created_at),
-          liked: false, // будет обновлено позже
+          liked: false,
           expanded: false
         }));
 
@@ -461,34 +477,22 @@ const App = {
       }
     }
 
-    // --- Вспомогательные
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
-      return null;
-    }
-
     // --- Инициализация
     onMounted(() => {
-      // Автоматическая загрузка ленты при входе
       if (!isGuest.value) {
         loadFeed();
       }
 
-      // Обработчик прокрутки
       const scroller = getScroller();
       const handleScroll = () => {
         showScrollTop.value = scroller.scrollTop > 400;
       };
       scroller.addEventListener('scroll', handleScroll);
 
-      // Мониторинг активности
       setInterval(() => {
         userStats.readingHours += 1/3600;
       }, 1000);
 
-      // Проверка гостевого режима
       if (window.location.hash === '#guest') {
         skipToFeed();
       }
@@ -627,7 +631,6 @@ const App = {
       if (!newPostText.value.trim()) { postValidation.value = 'Напишите текст поста'; return; }
 
       try {
-        // Вызов через api
         const newPost = await postsAPI.create({
           title: newPostTitle.value,
           description: newPostText.value,
@@ -637,7 +640,6 @@ const App = {
           file_url: newPostImage.value
         });
 
-        // Добавляем в локальный список
         const post = {
           id: newPost.id,
           authorId: 'me',
@@ -748,7 +750,7 @@ const App = {
       scrollToTop,
       getScroller,
       formatDateRelative,
-      getCookie,
+      getCookie: () => null,
       openChatWith,
       sendChatMessage,
       setReaction,
@@ -771,10 +773,13 @@ const App = {
         const m = { 'onboarding-hobbies':1,'onboarding-levels':2,'onboarding-goals':3,'onboarding-summary':4,'onboarding-friends':5 };
         return m[page.value] || 0;
       }),
-      filteredHobbies: computed(() => {
-        // Здесь можно подгружать из /hobbies/ при необходимости
-        return [];
-      }),
+      filteredHobbies: computed(() => [
+        { id: 1, name: 'Рисование', icon: '🎨' },
+        { id: 2, name: 'Танцы', icon: '💃' },
+        { id: 3, name: 'Программирование', icon: '💻' },
+        { id: 4, name: 'Кулинария', icon: '🍳' },
+        { id: 5, name: 'Фотография', icon: '📷' }
+      ]),
       friendsTabs2: computed(() => {
         const tabs = ['Все'];
         selectedHobbies.value.forEach(id => {
@@ -803,9 +808,7 @@ const App = {
       currentTheme, soundsEnabled, currentLang, setLang,
       settingNewName, settingNewBio,
       applyTheme,
-
-      // Helper
-      tr: { /* будет заполнено при локализации */ }
+      tr: {}
     };
   },
   template: `
@@ -1022,10 +1025,6 @@ const App = {
 };
 
 // === ЗАПУСК ПРИЛОЖЕНИЯ ===
-
-// Применяем тему
 const theme = localStorage.getItem('hd_theme') || 'light';
 document.body.classList.toggle('dark', theme === 'dark');
-
-// Монтируем приложение
 createApp(App).mount('#app');
