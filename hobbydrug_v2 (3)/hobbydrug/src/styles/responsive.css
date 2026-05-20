@@ -1,0 +1,234 @@
+/* =========================================================
+   RESPONSIVE LAYOUT
+   Breakpoints:
+     ≤ 480px  — phone portrait (4:3 and narrow)
+     481–768px — phone landscape / small tablet
+     769–1024px — tablet (16:9)
+     ≥ 1025px — desktop (existing styles handle this)
+   ========================================================= */
+
+/* ── Shared: hide sidebar on all mobile/tablet ── */
+@media (max-width: 1024px) {
+  :root { --sidebar-w: 0px; }
+  .app-sidebar { display: none !important; }
+  .mobile-nav-bar { display: flex !important; }
+}
+@media (min-width: 1025px) {
+  .mobile-nav-bar { display: none !important; }
+  .app-sidebar { display: flex !important; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   MOBILE BOTTOM NAV (shared phone + tablet)
+   ───────────────────────────────────────────────────────── */
+.mobile-nav-bar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #fff;
+  border-top: 1.5px solid #EDE8E0;
+  z-index: 200;
+  padding: 4px 0 calc(4px + env(safe-area-inset-bottom));
+  box-shadow: 0 -2px 12px rgba(92,61,30,.08);
+}
+body.dark .mobile-nav-bar {
+  background: #1f2229;
+  border-color: #3a3f4d;
+  box-shadow: 0 -2px 12px rgba(0,0,0,.3);
+}
+.mobile-nav-bar .nav-item {
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 5px 2px;
+  font-size: 10px;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+  border-radius: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.mobile-nav-bar .nav-item.active::before { display: none; }
+.mobile-nav-bar .nav-item.active {
+  color: var(--orange);
+  background: transparent;
+}
+.mobile-nav-bar .nav-icon { font-size: 22px; display: block; line-height: 1; }
+
+/* ─────────────────────────────────────────────────────────
+   TOPBAR — phone & tablet
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .app-topbar { padding: 10px 12px; gap: 10px; }
+  .topbar-search-wrap { max-width: none; flex: 1; }
+  .topbar-search { padding: 8px 12px; }
+  .btn-create-post { padding: 8px 12px; font-size: 12px; white-space: nowrap; }
+  .streak-display { font-size: 13px; gap: 4px; }
+  .heart-btn { width: 34px; height: 34px; font-size: 17px; }
+  .user-avatar-btn { width: 34px; height: 34px; }
+  .topbar-right { gap: 8px; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   MAIN CONTENT — add bottom padding for nav bar
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  /* bottom padding goes on page content, not on scroll container */
+  .feed-page-wrap { padding-bottom: 80px !important; }
+  .settings-page  { padding-bottom: 80px !important; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   FEED PAGE
+   ───────────────────────────────────────────────────────── */
+/* Tablet (769-1024): two-column but narrower */
+@media (min-width: 769px) and (max-width: 1024px) {
+  [v-if*="navPage==='feed'"] { padding: 16px 12px !important; }
+  .feed-main { padding: 0 8px 80px; }
+  .feed-right { width: 240px; padding: 16px 0; }
+  .post-card { padding: 18px; }
+  .post-img { width: 160px; min-width: 160px; height: 130px; }
+  .progress-card { padding: 16px; }
+}
+
+/* Phone (≤768): single column, hide right panel */
+@media (max-width: 768px) {
+  .feed-main { padding: 0 0 80px; }
+  .feed-right { display: none; }
+  .post-card { border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+  .post-content-wrap { gap: 10px; }
+  .post-img { width: 120px; min-width: 120px; height: 100px; }
+  .post-title { font-size: 16px; }
+  .post-text { font-size: 13px; }
+  .post-actions { gap: 12px; }
+  .action-btn { font-size: 13px; padding: 5px 8px; }
+  .post-header { flex-wrap: wrap; gap: 8px; }
+  .post-meta { flex-wrap: wrap; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   PROFILE PAGE
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .profile-card { padding: 20px 16px; }
+  .month-stats-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .month-stat-card { padding: 14px 10px; }
+  .month-stat-card .ms-icon { font-size: 28px; }
+  .month-stat-card .ms-num { font-size: 22px; }
+}
+@media (max-width: 768px) {
+  .profile-card { padding: 16px 14px; }
+  .profile-name { font-size: 20px; }
+  .profile-avatar-big { width: 72px; height: 72px; }
+  .month-stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .month-stat-card { padding: 12px 8px; }
+  .month-stat-card .ms-icon { font-size: 24px; }
+  .month-stat-card .ms-num { font-size: 20px; }
+  .month-stat-card .ms-label { font-size: 11px; }
+  .friends-list-card { padding: 14px 12px; gap: 12px; }
+  .friends-list-avatar { width: 58px; height: 58px; }
+  .friends-list-name { font-size: 15px; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   SETTINGS PAGE
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .settings-page { padding: 16px 12px; }
+  .settings-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+}
+@media (max-width: 768px) {
+  .settings-page { padding: 12px 10px; }
+  .settings-grid { grid-template-columns: 1fr; gap: 10px; }
+  /* Force span-2 cards back to single column */
+  .settings-card[style*="span 2"],
+  .settings-card[style*="grid-column:span 2"] { grid-column: span 1 !important; }
+  .lang-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .settings-card { padding: 16px; }
+  .settings-option-row { gap: 8px; }
+  .settings-opt-btn { padding: 8px 14px; font-size: 13px; }
+}
+@media (max-width: 480px) {
+  .lang-grid { grid-template-columns: repeat(2, 1fr); }
+  .settings-opt-btn { padding: 7px 10px; font-size: 12px; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   CHAT PAGE
+   ───────────────────────────────────────────────────────── */
+/* Tablet: narrower chat list */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .chat-layout { height: calc(100vh - 57px - 64px); }
+  .chat-list { width: 240px !important; }
+}
+/* Phone: vertical stack */
+@media (max-width: 768px) {
+  .chat-layout { flex-direction: column; height: calc(100vh - 57px - 60px); }
+  .chat-list { width: 100% !important; height: auto; max-height: 180px; border-right: none; border-bottom: 1.5px solid #EDE8E0; flex-shrink: 0; }
+  body.dark .chat-list { border-color: #3a3f4d; }
+  .chat-resizer { display: none; }
+  .chat-main { flex: 1; min-height: 0; }
+  .chat-messages-area { padding: 10px 12px; }
+  .chat-input-area { padding: 8px 10px; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   FRIENDS PAGE
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .friends-filter-tabs { gap: 6px; }
+  .friends-filter-tab { padding: 7px 14px; font-size: 13px; }
+  .btn-write { padding: 9px 14px; font-size: 13px; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   MODALS
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .modal-box { padding: 20px 16px; margin: 12px; border-radius: 16px; }
+  .modal-title { font-size: 17px; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   MOTIVATION BUBBLE (phone — hide it, too cluttered)
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .motivation-bubble { display: none; }
+  .scroll-top { bottom: 74px; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   ONBOARDING / AUTH pages — phone tweaks
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .auth-card { padding: 24px 18px; margin: 16px; }
+  .auth-title { font-size: 20px; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   TABLET-SPECIFIC NAV: slightly larger icons + text
+   ───────────────────────────────────────────────────────── */
+@media (min-width: 481px) and (max-width: 1024px) {
+  .mobile-nav-bar .nav-icon { font-size: 24px; }
+  .mobile-nav-bar .nav-item { font-size: 11px; padding: 6px 4px; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   FEED WRAPPER — override inline padding for mobile
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .feed-page-wrap { padding: 12px 10px 80px !important; }
+  /* app-main-scroll overflow set inline */
+}
+@media (min-width: 769px) and (max-width: 1024px) {
+  .feed-page-wrap { padding: 16px 12px 80px !important; }
+  /* app-main-scroll overflow set inline */
+}
+
+/* Bottom padding for inner page sections (scoped to app layout) */
+@media (max-width: 1024px) {
+  .app-main-scroll [style*="padding:24px"] { padding-bottom: 80px !important; }
+}
