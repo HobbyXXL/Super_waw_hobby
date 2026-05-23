@@ -25,16 +25,20 @@ class PortfolioService:
 
     def get_user_portfolio(self, user_id: str) -> list[PortfolioWork]:
         return [
-            PortfolioWork.model_validate(p) 
+            PortfolioWork.model_validate(p)
             for p in self.db.query(PortfolioWorkModel)
-            .filter(PortfolioWorkModel.user_id == user_id)
+            .filter(
+                PortfolioWorkModel.user_id == user_id,
+                PortfolioWorkModel.is_active == True,
+            )
             .order_by(PortfolioWorkModel.created_at.desc())
             .all()
         ]
 
     def get_portfolio_by_id(self, portfolio_id: int) -> PortfolioWork | None:
         db_portfolio = self.db.query(PortfolioWorkModel).filter(
-            PortfolioWorkModel.id == portfolio_id
+            PortfolioWorkModel.id == portfolio_id,
+            PortfolioWorkModel.is_active == True,
         ).first()
         return PortfolioWork.model_validate(db_portfolio) if db_portfolio else None
 
@@ -48,7 +52,10 @@ class PortfolioService:
         query = (
             self.db.query(PortfolioWorkModel, UserModel)
             .join(UserModel, PortfolioWorkModel.user_id == UserModel.id)
-            .filter(PortfolioWorkModel.visibility == "public")
+            .filter(
+                PortfolioWorkModel.visibility == "public",
+                PortfolioWorkModel.is_active == True,
+            )
             .order_by(PortfolioWorkModel.created_at.desc())
         )
         if hobby_id is not None:
@@ -92,19 +99,20 @@ class PortfolioService:
             )
         return feed
 
-    def delete_portfolio_work(self, portfolio_id: int, user_id: str) -> bool:
-        db_portfolio = self.db.query(PortfolioWorkModel).filter(
-            PortfolioWorkModel.id == portfolio_id,
-            PortfolioWorkModel.user_id == user_id
+    def get_raw_post(self, portfolio_id: int) -> PortfolioWorkModel | None:
+        return self.db.query(PortfolioWorkModel).filter(
+            PortfolioWorkModel.id == portfolio_id
         ).first()
-        
-        if db_portfolio:
-            from models import Like as LikeModel
-            self.db.query(LikeModel).filter(
-                LikeModel.portfolio_id == portfolio_id
-            ).delete(synchronize_session=False)
-            
-            self.db.delete(db_portfolio)
-            self.db.commit()
-            return True
-        return False
+
+    def soft_delete_portfolio_work(self, portfolio_id: int, user_id: str) -> str:
+        """
+        Returns: 'ok' | 'not_found' | 'forbidden'
+        """
+        db_portfolio = self.get_raw_post(portfolio_id)
+        if not db_portfolio or not db_portfolio.is_active:
+            return "not_found"
+        if db_portfolio.user_id != user_id:
+            return "forbidden"
+        db_portfolio.is_active = False
+        self.db.commit()
+        return "ok"

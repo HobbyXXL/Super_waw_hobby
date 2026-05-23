@@ -11,4 +11,7 @@ const portfolioApi = {
   toggleLike(postId) {
     return apiClient.post(`/likes/${postId}`, {});
   },
+  deletePost(postId) {
+    return apiClient.delete(`/portfolio/${postId}`);
+  },
 };

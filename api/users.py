@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from schemas import UserInfo, UserProfileExtended, ProfileCompleteRequest
+from schemas.users import ProfileIdsUpdate
 from models import User as UserModel
 from models.user_hobbies import UserHobby
 from models.goals import Goal
@@ -32,6 +33,18 @@ def get_extended_profile_endpoint(
 
 
 @router.put("/me/profile", response_model=UserProfileExtended)
+def update_profile_ids(
+    profile_data: ProfileIdsUpdate,
+    current_user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Обновить хобби (до 5) и цели (до 4 текстов)"""
+    repo = UserRepository(db)
+    service = UserService(repo)
+    return service.update_profile_ids(current_user.id, profile_data)
+
+
+@router.put("/me/profile/full", response_model=UserProfileExtended)
 def update_profile(
     profile_data: ProfileCompleteRequest,  
     current_user: UserModel = Depends(get_current_user), 

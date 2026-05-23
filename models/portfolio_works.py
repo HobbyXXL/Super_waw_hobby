@@ -22,7 +22,8 @@ class PortfolioWork(Base):
     file_url = Column(Text, nullable=True)  # Ссылка на файл/изображение
     
     is_public = Column(Boolean, default=True)  # публичный или личный
-    
+    is_active = Column(Boolean, default=True, nullable=False)
+
     visibility = Column(String, default="public")  # legacy поле
     activity_status = Column(String, default=ActivityStatus.DID_HOBBY.value)
     

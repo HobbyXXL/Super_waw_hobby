@@ -13,3 +13,4 @@ from .chats import Chat
 from .messages import Message
 from .terms_versions import TermsVersion
 from .likes import Like
+from .comments import Comment

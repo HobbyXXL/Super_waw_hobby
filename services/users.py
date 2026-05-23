@@ -9,7 +9,9 @@ from schemas.users import (
 )
 from core.security import verify_password, create_access_token
 from core.exceptions import UserAlreadyExistsException, InvalidCredentialsException
-from models import UserHobby, Goal, UserActivity, PortfolioWork as PortfolioWorkModel, User as UserModel
+from models import UserHobby, Goal, UserActivity, PortfolioWork as PortfolioWorkModel, User as UserModel, Hobby
+from schemas.users import ProfileIdsUpdate
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime, date, timedelta
 from services.portfolio import PortfolioService
@@ -108,7 +110,9 @@ class UserService:
         portfolio_service = PortfolioService(self.repo.db)
         posts = portfolio_service.get_user_portfolio(user_id)
         streak = self.calculate_activity_streak(user_id)
-        
+        hobbies = self._load_user_hobbies(user_id)
+        goals = self._load_user_goals(user_id)
+
         return UserProfileExtended(
             id=user.id,
             login=user.login,
@@ -118,8 +122,77 @@ class UserService:
             created_at=user.created_at,
             last_seen=user.last_seen,
             posts=posts,
-            activity_streak=streak
+            activity_streak=streak,
+            hobbies=hobbies,
+            goals=goals,
         )
+
+    def _load_user_hobbies(self, user_id: str) -> list[dict]:
+        rows = (
+            self.repo.db.query(UserHobby, Hobby)
+            .join(Hobby, UserHobby.hobby_id == Hobby.id)
+            .filter(UserHobby.user_id == user_id)
+            .all()
+        )
+        return [
+            {
+                "hobby_id": uh.hobby_id,
+                "name": h.name,
+                "experience_level": uh.experience_level,
+            }
+            for uh, h in rows
+        ]
+
+    def _load_user_goals(self, user_id: str) -> list[dict]:
+        goals = self.repo.db.query(Goal).filter(Goal.user_id == user_id).all()
+        return [
+            {"id": g.id, "title": g.title, "type": g.type, "description": g.description}
+            for g in goals
+        ]
+
+    def update_profile_ids(self, user_id: str, data: ProfileIdsUpdate) -> UserProfileExtended:
+        hobby_rows = (
+            self.repo.db.query(Hobby.id).filter(Hobby.id.in_(data.hobby_ids)).all()
+        )
+        if len(hobby_rows) != len(set(data.hobby_ids)):
+            raise HTTPException(status_code=400, detail="One or more hobby IDs are invalid")
+
+        self.repo.db.query(UserHobby).filter(UserHobby.user_id == user_id).delete()
+        for hobby_id in data.hobby_ids[:5]:
+            self.repo.db.add(
+                UserHobby(
+                    user_id=user_id,
+                    hobby_id=hobby_id,
+                    experience_level="beginner",
+                    is_public=True,
+                )
+            )
+
+        if data.goal_texts is not None:
+            self.repo.db.query(Goal).filter(Goal.user_id == user_id).delete()
+            for i, line in enumerate(data.goal_texts[:4]):
+                text = line.strip()
+                if not text:
+                    continue
+                title = text if len(text) >= 10 else f"{text} — моя цель"
+                description = text if len(text) >= 20 else (
+                    f"{text}. Хочу достичь этого через регулярную практику."
+                )
+                self.repo.db.add(
+                    Goal(
+                        user_id=user_id,
+                        type=["learn", "create", "relax"][i % 3],
+                        title=title[:200],
+                        description=description[:1000],
+                        is_public=True,
+                    )
+                )
+
+        self.repo.db.commit()
+        profile = self.get_extended_profile(user_id)
+        if not profile:
+            raise HTTPException(status_code=404, detail="User not found")
+        return profile
 
     def calculate_activity_streak(self, user_id: str) -> int:
         """Считаем количество дней активности подряд"""

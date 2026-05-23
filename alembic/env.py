@@ -15,6 +15,7 @@ import models.user_hobbies
 import models.user_goals
 import models.portfolio_works
 import models.user_activity
+import models.comments
 import models.chats
 import models.messages
 

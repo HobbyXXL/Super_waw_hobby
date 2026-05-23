@@ -42,6 +42,8 @@ const App = {
       bio: 'Люблю хобби и новых друзей! ⭐',
     });
     const isGuest = ref(false);
+    const currentUserId = ref('');
+    const profilePostsLoading = ref(false);
     const userStats = reactive({ posts: 0, likesGiven: 0, comments: 0, readingHours: 0, friends: 0 });
 
     // Calendar
@@ -76,10 +78,15 @@ const App = {
       settingNewName.value = '';
       showToast('✅ Имя изменено!');
     }
-    function saveBio() {
+    async function saveBio() {
       currentUser.bio = settingNewBio.value || currentUser.bio;
       settingNewBio.value = '';
-      showToast('✅ О себе обновлено!');
+      try {
+        await saveProfileToApi();
+        showToast('✅ Профиль сохранён!');
+      } catch (err) {
+        showToast(err.message || '✅ О себе обновлено локально');
+      }
     }
     function handleAvatarChange(e) {
       const file = e.target.files[0];
@@ -318,6 +325,7 @@ const App = {
 
     function applyProfileFromApi(profile) {
       if (!profile) return;
+      currentUserId.value = profile.id || currentUserId.value;
       currentUser.name = profile.login || currentUser.name;
       currentUser.streak = profile.activity_streak ?? currentUser.streak;
       if (profile.hobbies?.length) {
@@ -327,7 +335,50 @@ const App = {
           level: API_TO_LEVEL[h.experience_level] || 'Новичок',
         }));
       }
+      if (profile.goals?.length) {
+        currentUser.goals = profile.goals.map((g) => g.title).join('\n');
+      }
       userStats.posts = profile.posts?.length ?? userStats.posts;
+    }
+
+    function patchPostInLists(postId, patch) {
+      const apply = (list) => {
+        const idx = list.findIndex((p) => p.id === postId);
+        if (idx < 0) return;
+        if (patch._remove) list.splice(idx, 1);
+        else list[idx] = { ...list[idx], ...patch };
+      };
+      apply(allPosts.value);
+      apply(myPosts.value);
+    }
+
+    function isMyPost(post) {
+      if (!post) return false;
+      if (currentUserId.value && post.authorId === currentUserId.value) return true;
+      return post.authorId === 'me';
+    }
+
+    async function loadMyPosts() {
+      if (isGuest.value || !apiClient.getToken()) {
+        myPosts.value = [];
+        return;
+      }
+      profilePostsLoading.value = true;
+      try {
+        const items = await portfolioApi.my();
+        myPosts.value = (items || []).map((p) => mapPortfolioToPost(
+          p,
+          currentUserId.value,
+          currentUser.name,
+          currentUser.avatar
+        ));
+        userStats.posts = myPosts.value.length;
+      } catch {
+        myPosts.value = allPosts.value.filter((p) => isMyPost(p));
+        userStats.posts = myPosts.value.length;
+      } finally {
+        profilePostsLoading.value = false;
+      }
     }
 
     async function restoreSession() {
@@ -339,6 +390,7 @@ const App = {
         page.value = 'feed';
         navPage.value = 'feed';
         await loadFeedFromApi(true);
+        await loadMyPosts();
       } catch {
         apiClient.clearSession();
       }
@@ -537,6 +589,7 @@ const App = {
         page.value = 'feed';
         navPage.value = 'feed';
         await loadFeedFromApi(true);
+        await loadMyPosts();
         showToast('🎉 Добро пожаловать в ХОББИДРУГ!');
       } catch (err) {
         onboardingValidationMsg.value = err.message || 'Не удалось сохранить профиль';
@@ -554,31 +607,95 @@ const App = {
       if (isGuest.value) { showToast('Войдите, чтобы ставить лайки'); return; }
       const prevLiked = post.liked;
       const prevLikes = post.likes;
-      post.liked = !post.liked;
-      post.likes += post.liked ? 1 : -1;
-      if (post.liked) { playSoundIfEnabled('like'); userStats.likesGiven++; likedNotifCount.value++; }
-      else { userStats.likesGiven = Math.max(0, userStats.likesGiven - 1); likedNotifCount.value = Math.max(0, likedNotifCount.value - 1); }
-      if (post._fromApi && apiClient.getToken()) {
+      const nextLiked = !post.liked;
+      const nextLikes = post.likes + (nextLiked ? 1 : -1);
+      patchPostInLists(post.id, { liked: nextLiked, likes: nextLikes });
+      if (nextLiked) { playSoundIfEnabled('like'); userStats.likesGiven++; likedNotifCount.value++; }
+      else {
+        userStats.likesGiven = Math.max(0, userStats.likesGiven - 1);
+        likedNotifCount.value = Math.max(0, likedNotifCount.value - 1);
+      }
+      if (apiClient.getToken() && post._fromApi) {
         try {
           const res = await portfolioApi.toggleLike(post.id);
-          post.liked = res.liked;
-          post.likes = res.total_likes;
+          patchPostInLists(post.id, { liked: res.liked, likes: res.total_likes });
         } catch {
-          post.liked = prevLiked;
-          post.likes = prevLikes;
+          patchPostInLists(post.id, { liked: prevLiked, likes: prevLikes });
           showToast('Не удалось обновить лайк');
         }
       }
     }
-    function toggleComments(postId) { openComments.value = {...openComments.value, [postId]: !openComments.value[postId]}; }
-    function sendComment(post) {
+
+    async function toggleComments(post) {
+      const postId = typeof post === 'object' ? post.id : post;
+      const p = typeof post === 'object' ? post : allPosts.value.find((x) => x.id === postId);
+      const opening = !openComments.value[postId];
+      openComments.value = { ...openComments.value, [postId]: opening };
+      if (!opening || !p?._fromApi || !apiClient.getToken()) return;
+      try {
+        const list = await commentsApi.getComments(postId);
+        const mapped = (list || []).map(mapCommentDto);
+        patchPostInLists(postId, { comments: mapped, _commentsLoaded: true });
+      } catch { /* keep local/mock comments */ }
+    }
+
+    async function sendComment(post) {
       if (isGuest.value) { showToast('Войдите, чтобы комментировать'); return; }
-      const text = (commentInputs.value[post.id]||'').trim();
+      const text = (commentInputs.value[post.id] || '').trim();
       if (!text) return;
-      post.comments.push({ author: currentUser.name, text, time: 'только что' });
-      post.comments = [...post.comments];
-      commentInputs.value = {...commentInputs.value, [post.id]: ''};
-      userStats.comments++; playSoundIfEnabled('select');
+      commentInputs.value = { ...commentInputs.value, [post.id]: '' };
+      if (post._fromApi && apiClient.getToken()) {
+        try {
+          const created = await commentsApi.addComment(post.id, text);
+          const mapped = mapCommentDto(created);
+          const comments = [mapped, ...(post.comments || [])];
+          patchPostInLists(post.id, { comments });
+          userStats.comments++;
+          playSoundIfEnabled('select');
+          return;
+        } catch (err) {
+          showToast(err.message || 'Не удалось отправить комментарий');
+          commentInputs.value = { ...commentInputs.value, [post.id]: text };
+          return;
+        }
+      }
+      const local = { author: currentUser.name, text, time: 'только что' };
+      patchPostInLists(post.id, { comments: [...(post.comments || []), local] });
+      userStats.comments++;
+      playSoundIfEnabled('select');
+    }
+
+    async function deletePost(post) {
+      if (!isMyPost(post)) {
+        showToast('Доступ запрещён');
+        return;
+      }
+      if (!confirm('Удалить этот пост?')) return;
+      try {
+        if (post._fromApi && apiClient.getToken()) {
+          await portfolioApi.deletePost(post.id);
+        }
+        allPosts.value = allPosts.value.filter((p) => p.id !== post.id);
+        myPosts.value = myPosts.value.filter((p) => p.id !== post.id);
+        userStats.posts = myPosts.value.length;
+        showToast('Пост удалён');
+      } catch (err) {
+        if (err.status === 403) showToast('Доступ запрещён');
+        else showToast(err.message || 'Не удалось удалить пост');
+      }
+    }
+
+    async function saveProfileToApi() {
+      if (!apiClient.getToken()) return;
+      const hobbyIds = currentUser.hobbies
+        .map((h) => h.id)
+        .filter((id) => typeof id === 'number');
+      const goalLines = String(currentUser.goals || '').split('\n').map((s) => s.trim()).filter(Boolean);
+      if (!hobbyIds.length) return;
+      await usersApi.updateProfile({
+        hobby_ids: hobbyIds.slice(0, 5),
+        goal_texts: goalLines.slice(0, 4),
+      });
     }
     function refreshFeed() {
       allPosts.value = [...allPosts.value].sort(()=>Math.random()-.5);
@@ -712,16 +829,15 @@ const App = {
           fd.append('activity_status', newPostHobbyDone.value ? 'did_hobby' : 'skipped');
           if (newPostImageFile.value) fd.append('file', newPostImageFile.value);
           const created = await portfolioApi.create(fd);
-          const newPost = mapFeedPost({
-            ...created,
-            author: { login: currentUser.name, id: 'me' },
-            likes_count: 0,
-            liked: false,
-            activity_status: newPostHobbyDone.value ? 'did_hobby' : 'skipped',
-          }, currentUser.avatar);
+          const newPost = mapPortfolioToPost(
+            created,
+            currentUserId.value,
+            currentUser.name,
+            currentUser.avatar
+          );
           newPost.tags = [...newPostTags.value];
           allPosts.value.unshift(newPost);
-          myPosts.value.unshift(newPost);
+          await loadMyPosts();
         } else {
           const newPost = { id: Date.now(), authorId: 'me', author: currentUser.name, avatar: currentUser.avatar, time: 'только что', badge: newPostHobbyDone.value ? 'Занимался хобби' : 'Новый пост', hobbyDone: newPostHobbyDone.value, streak: currentUser.streak, title: newPostTitle.value.trim(), text: newPostText.value.trim(), img: newPostImage.value || null, tags: [...newPostTags.value], likes: 0, liked: false, comments: [], shares: 0, expanded: false };
           allPosts.value.unshift(newPost);
@@ -809,7 +925,9 @@ const App = {
 
     watch(navPage, (val) => {
       if (val === 'feed' && !isGuest.value && apiClient.getToken()) loadFeedFromApi(false);
-      if (val === 'profile' && !isGuest.value) syncProfile();
+      if (val === 'profile' && !isGuest.value && apiClient.getToken()) {
+        syncProfile().then(() => loadMyPosts());
+      }
     });
 
     const LANGS = [{code:'ru',flag:'🇷🇺',name:'Русский'},{code:'en',flag:'🇬🇧',name:'English'},{code:'fr',flag:'🇫🇷',name:'Français'},{code:'es',flag:'🇪🇸',name:'Español'},{code:'kz',flag:'🇰🇿',name:'Қазақша'},{code:'be',flag:'🇧🇾',name:'Беларуская'}];
@@ -826,7 +944,7 @@ const App = {
       selectedHobbies, hobbyLevels, goalsText, addedFriends, friendsTab, hobbySearch,
       onboardingValidationMsg, onboardingStep, filteredHobbies, friendsTabs2, filteredFriends,
       sidebarSteps, onboardingBgImages,
-      currentUser, isGuest, userStats, myPosts,
+      currentUser, currentUserId, isGuest, userStats, myPosts, profilePostsLoading, isMyPost,
       calData, visitedDays,
       allPosts, likedPosts, likedNotifCount, openComments, commentInputs,
       showScrollTop, loadingMore, sortedPosts, getScroller,
@@ -842,7 +960,7 @@ const App = {
       HOBBIES, LEVELS, GOAL_HINTS, SUGGESTED_TAGS, ALL_USERS,
       submitAuth, skipToFeed,
       toggleHobby, setLevel, addGoalHint, nextOnboarding, prevOnboarding, toggleFriend,
-      likePost, toggleComments, sendComment, refreshFeed,
+      likePost, toggleComments, sendComment, deletePost, refreshFeed, loadMyPosts,
       addTagFromInput, addSuggestedTag, removeTag, handleImageUpload, submitPost,
       goToUser, addFriendFromPage, showToast,
       saveName, saveBio, handleAvatarChange,
@@ -1147,7 +1265,8 @@ const App = {
             <div v-if="post.tags.length" class="post-tags"><span v-for="tag in post.tags" :key="tag" class="post-tag" @click="searchQuery=tag;showSearchResults=true">{{ tag }}</span></div>
             <div class="post-actions">
               <button class="action-btn" :class="{liked:post.liked}" @click="likePost(post)"><span class="heart-icon">{{ post.liked?'❤️':'🤍' }}</span> {{ post.likes }}</button>
-              <button class="action-btn" @click="toggleComments(post.id)">💬 {{ post.comments.length }}</button>
+              <button class="action-btn" @click="toggleComments(post)">💬 {{ post.comments.length }}</button>
+              <button v-if="isMyPost(post)" class="action-btn" title="Удалить" @click="deletePost(post)">🗑️</button>
               <button class="action-btn">↗ {{ post.shares }}</button>
             </div>
             <div v-if="openComments[post.id]" class="comments-section">
@@ -1240,7 +1359,8 @@ const App = {
             </div>
           </div>
           <!-- Posts -->
-          <div v-if="myPosts.length===0" class="profile-card" style="text-align:center;padding:40px">
+          <div v-if="profilePostsLoading" class="profile-card" style="text-align:center;padding:40px;color:var(--gray-text)">Загрузка постов...</div>
+          <div v-else-if="myPosts.length===0" class="profile-card" style="text-align:center;padding:40px">
             <div style="font-size:48px;margin-bottom:16px;animation:starFloat 3s ease-in-out infinite">✍️</div>
             <div style="font-size:20px;font-weight:800;color:var(--brown-dark);margin-bottom:8px">Напишите первый пост ❤️</div>
             <div style="font-size:14px;color:var(--gray-text);margin-bottom:20px">это поможет вам быстрее расти и находить новых друзей</div>
@@ -1260,7 +1380,18 @@ const App = {
               <div v-if="post.tags.length" class="post-tags"><span v-for="tag in post.tags" :key="tag" class="post-tag">{{ tag }}</span></div>
               <div class="post-actions">
                 <button class="action-btn" :class="{liked:post.liked}" @click="likePost(post)"><span class="heart-icon">{{ post.liked?'❤️':'🤍' }}</span> {{ post.likes }}</button>
-                <button class="action-btn" @click="toggleComments(post.id)">💬 {{ post.comments.length }}</button>
+                <button class="action-btn" @click="toggleComments(post)">💬 {{ post.comments.length }}</button>
+                <button v-if="isMyPost(post)" class="action-btn" title="Удалить" @click="deletePost(post)">🗑️</button>
+              </div>
+              <div v-if="openComments[post.id]" class="comments-section">
+                <div v-for="c in post.comments" :key="c.id || c.time+c.author" class="comment-item">
+                  <div class="comment-avatar"><img :src="'https://ui-avatars.com/api/?name='+encodeURIComponent(c.author)+'&background=FFD166&color=3B2510'"/></div>
+                  <div><div class="comment-author">{{ c.author }}</div><div class="comment-text">{{ c.text }}</div><div class="comment-time">{{ c.time }}</div></div>
+                </div>
+                <div class="comment-input-row">
+                  <input class="comment-input" v-model="commentInputs[post.id]" :placeholder="tr.comment_placeholder" @keyup.enter="sendComment(post)"/>
+                  <button class="comment-send" @click="sendComment(post)">↑</button>
+                </div>
               </div>
             </div>
           </div>
@@ -1301,7 +1432,8 @@ const App = {
             <div class="post-content-wrap"><div class="post-text">{{ post.text }}</div><div v-if="post.img" class="post-img"><img :src="post.img"/></div></div>
             <div class="post-actions">
               <button class="action-btn liked" @click="likePost(post)"><span class="heart-icon">❤️</span> {{ post.likes }}</button>
-              <button class="action-btn" @click="toggleComments(post.id)">💬 {{ post.comments.length }}</button>
+              <button class="action-btn" @click="toggleComments(post)">💬 {{ post.comments.length }}</button>
+              <button v-if="isMyPost(post)" class="action-btn" title="Удалить" @click="deletePost(post)">🗑️</button>
             </div>
           </div>
         </div>
@@ -1426,7 +1558,8 @@ const App = {
             <div v-if="post.tags.length" class="post-tags"><span v-for="tag in post.tags" :key="tag" class="post-tag">{{ tag }}</span></div>
             <div class="post-actions">
               <button class="action-btn" :class="{liked:post.liked}" @click="likePost(post)"><span class="heart-icon">{{ post.liked?'❤️':'🤍' }}</span> {{ post.likes }}</button>
-              <button class="action-btn" @click="toggleComments(post.id)">💬 {{ post.comments.length }}</button>
+              <button class="action-btn" @click="toggleComments(post)">💬 {{ post.comments.length }}</button>
+              <button v-if="isMyPost(post)" class="action-btn" title="Удалить" @click="deletePost(post)">🗑️</button>
               <button class="action-btn">↗ {{ post.shares }}</button>
             </div>
             <div v-if="openComments[post.id]" class="comments-section">

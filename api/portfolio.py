@@ -105,8 +105,10 @@ def delete_portfolio_work(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user)
 ):
-    """Удалить пост"""
+    """Мягкое удаление поста (только автор)"""
     service = PortfolioService(db)
-    success = service.delete_portfolio_work(portfolio_id, current_user.id)
-    if not success:
+    result = service.soft_delete_portfolio_work(portfolio_id, current_user.id)
+    if result == "forbidden":
+        raise HTTPException(status_code=403, detail="Access denied")
+    if result == "not_found":
         raise HTTPException(status_code=404, detail="Portfolio work not found")

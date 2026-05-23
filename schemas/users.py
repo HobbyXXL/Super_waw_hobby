@@ -70,6 +70,12 @@ class GoalCreate(BaseModel):
     why_goal: Optional[str] = Field(None, max_length=1000)
     is_public: bool = True
 
+class ProfileIdsUpdate(BaseModel):
+    """Обновление хобби и целей по ID / текстам"""
+    hobby_ids: List[int] = Field(..., min_length=1, max_length=5)
+    goal_texts: Optional[List[str]] = Field(None, max_length=4)
+
+
 class ProfileCompleteRequest(BaseModel):
     """Запрос на завершение профиля (после верификации)"""
     # ✅ Максимум 5 хобби

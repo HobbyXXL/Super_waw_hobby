@@ -1,5 +1,47 @@
-*.pyc
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 .venv/
-.DS_Store
+env/
+venv/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# База данных (НИКОГДА не грузим реальную базу!)
+*.db
+*.sqlite3
+.env
+database.db
+
+# Секреты и конфиги
+.env
+.env.local
+*.pem
+*.key
+secrets.json
+config_private.py
+
+# Логи
 *.log
+logs/
+
+# Frontend мусор
+node_modules/
+dist/
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Временные файлы
+tmp/
+temp/
+*.tmp

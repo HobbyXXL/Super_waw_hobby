@@ -33,11 +33,48 @@ function imageUrl(path) {
   return apiClient.getBaseUrl() + path;
 }
 
+function mapCommentDto(c) {
+  return {
+    id: c.id,
+    author: c.author?.login || 'Пользователь',
+    text: c.body,
+    time: formatRelativeTime(c.created_at),
+  };
+}
+
+function mapPortfolioToPost(item, currentUserId, currentUserName, currentUserAvatar) {
+  const isMine = item.user_id === currentUserId;
+  const authorLogin = isMine ? (currentUserName || 'Вы') : (item.author?.login || 'Пользователь');
+  const avatar = isMine
+    ? currentUserAvatar
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(authorLogin)}&background=FFD166&color=3B2510`;
+  return {
+    id: item.id,
+    authorId: item.user_id || item.author?.id,
+    author: authorLogin,
+    avatar,
+    time: formatRelativeTime(item.created_at),
+    badge: item.activity_status === 'did_hobby' ? 'Занимался хобби' : 'Новый пост',
+    hobbyDone: item.activity_status === 'did_hobby',
+    streak: 0,
+    title: item.title,
+    text: item.description || '',
+    img: imageUrl(item.file_url),
+    tags: item.hobby_id ? [`#hobby${item.hobby_id}`] : [],
+    likes: item.likes_count ?? 0,
+    liked: !!item.liked,
+    comments: [],
+    shares: 0,
+    expanded: false,
+    _fromApi: true,
+  };
+}
+
 function mapFeedPost(item, fallbackAvatar) {
   const authorLogin = item.author?.login || 'Пользователь';
   return {
     id: item.id,
-    authorId: item.author?.id,
+    authorId: item.author?.id || item.user_id,
     author: authorLogin,
     avatar: fallbackAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorLogin)}&background=FFD166&color=3B2510`,
     time: formatRelativeTime(item.created_at),
