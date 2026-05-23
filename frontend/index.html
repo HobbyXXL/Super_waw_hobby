@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ХОББИДРУГ — сервис для помощи в вашем хобби</title>
 
+  <!-- Vue 3 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Unbounded:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -39,7 +42,29 @@
 <body>
   <div id="app"></div>
 
-  <!-- Подключаем всё как один модуль -->
-  <script type="module" src="src/main.js"></script>
+  <!-- Vue destructuring -->
+  <script>
+    const { createApp, ref, computed, reactive, onMounted, watch, nextTick } = Vue;
+  </script>
+
+  <!-- App modules (order matters) -->
+  <script src="src/js/api/config.js"></script>
+  <script src="src/js/api/client.js"></script>
+  <script src="src/js/api/auth.js"></script>
+  <script src="src/js/api/users.js"></script>
+  <script src="src/js/api/hobbies.js"></script>
+  <script src="src/js/api/portfolio.js"></script>
+  <script src="src/js/api/activities.js"></script>
+  <script src="src/js/api/mappers.js"></script>
+  <script src="src/js/constants.js"></script>
+  <script src="src/js/i18n.js"></script>
+  <script src="src/js/audio.js"></script>
+  <script src="src/js/streak.js"></script>
+  <script src="src/js/calendar.js"></script>
+  <script src="src/js/chatData.js"></script>
+  <script src="src/js/app.js"></script>
+
+  <!-- Mount Vue app -->
+  <script src="src/main.js"></script>
 </body>
 </html>

@@ -9,6 +9,10 @@ from datetime import datetime
 async def get_current_user(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token")
     if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.lower().startswith("bearer "):
+            token = auth_header[7:].strip()
+    if not token:
         raise InvalidCredentialsException()
     payload = decode_access_token(token)
     if not payload or "sub" not in payload:

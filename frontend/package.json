@@ -8,16 +8,11 @@
     "dev": "npx live-server --port=3000 --open=index.html",
     "serve": "npx http-server -p 3000 -o"
   },
-  "keywords": [
-    "hobby",
-    "vue",
-    "social",
-    "hobbydrug"
-  ],
+  "keywords": ["hobby", "vue", "social", "hobbydrug"],
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "http-server": "^14.1.1",
-    "live-server": "^1.2.0"
+    "live-server": "^1.2.2",
+    "http-server": "^14.1.1"
   }
 }

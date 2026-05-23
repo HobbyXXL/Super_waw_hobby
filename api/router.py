@@ -6,7 +6,8 @@ from api.users import router as users_router
 from api.auth import router as auth_router
 from api.likes import router as likes_router
 from api.portfolio import router as portfolio_router
-from api.chats import router as chats_router 
+from api.chats import router as chats_router
+from api.activities import router as activities_router
 
 common_router = APIRouter()
 
@@ -20,3 +21,4 @@ common_router.include_router(users_router)
 common_router.include_router(portfolio_router)
 common_router.include_router(likes_router)
 common_router.include_router(chats_router)
+common_router.include_router(activities_router)
